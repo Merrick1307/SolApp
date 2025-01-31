@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from SolAppT import api_router
+from .api import api_router
 
 app = FastAPI(title="Solana Blockchain Integration Service")
 
