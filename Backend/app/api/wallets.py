@@ -8,11 +8,11 @@ from solders.pubkey import Pubkey
 from spl.token.client import Token
 from spl.token.constants import TOKEN_PROGRAM_ID
 
-from SolAppT import (
+from ..models import (
     WalletCreate, Transaction, WalletBalance,
     TokenBalance, WalletResponse
 )
-from SolAppT import client, logger
+from .tokens import client, logger
 
 # Empty dict for in-memory wallet storage
 wallets = {}

@@ -13,8 +13,8 @@ from solders.rpc.responses import RpcPerfSample
 from spl.token.client import Token
 from spl.token.constants import TOKEN_PROGRAM_ID
 
-from SolAppT import SOLANA_API_ENDPOINT
-from SolAppT import CustomToken, TokenX
+from ..core.config import SOLANA_API_ENDPOINT
+from ..models import CustomToken, TokenX
 
 
 logger = logging.getLogger(__name__)
