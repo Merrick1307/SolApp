@@ -184,7 +184,7 @@ The application includes comprehensive error handling:
 - Secure RPC communication
 - Input validation and sanitization
 
-## Future Improvements
+## Future Improvements (# TODO)
 
 1. Add mainnet support
 2. Implement token price feeds
