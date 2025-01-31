@@ -177,7 +177,7 @@ The application includes comprehensive error handling:
 - Solana RPC error handling
 - Transaction failure handling
 
-## Security Considerations
+## Security Considerations ()
 
 - Private keys are stored in-memory only
 - No sensitive data persistence
