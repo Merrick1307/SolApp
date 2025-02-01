@@ -25,7 +25,9 @@ client = Client(SOLANA_API_ENDPOINT, timeout=120)
 router = APIRouter()
 
 
-async def get_token_metadata(token_address: Pubkey) -> Optional[dict]:
+async def get_token_metadata(
+        token_address: Pubkey
+) -> Optional[dict]:
     """Helper function to get token metadata from on-chain data"""
     try:
         # Create a temporary keypair for reading
@@ -64,12 +66,14 @@ async def get_trending_tokens(limit: int = 10):
     """Get list of trending tokens based on recent transaction volume"""
     try:
         # Fetch recent performance samples
-        recent_blocks = client.get_recent_performance_samples(limit=5)
+        recent_blocks = client.get_recent_performance_samples(limit=10)
         performance_samples: List[RpcPerfSample] = recent_blocks.value
 
         if not performance_samples:
             logger.error("No recent performance samples found.")
-            raise HTTPException(status_code=500, detail="Failed to fetch recent blocks")
+            raise HTTPException(
+                status_code=500, detail="Failed to fetch recent blocks"
+            )
 
         # Extract slot numbers
         slots = [sample.slot for sample in performance_samples[:5]]
@@ -78,11 +82,16 @@ async def get_trending_tokens(limit: int = 10):
         for slot in slots:
             block_info = client.get_block(slot)
             if not hasattr(block_info, "value") or not block_info.value:
-                logger.warning(f"Skipping block {slot} due to missing transaction data")
+                logger.warning(
+                    f"Skipping block {slot} due to missing transaction data"
+                )
                 continue
 
             for tx in block_info.value.transactions:
-                if str(TOKEN_PROGRAM_ID) in [str(key) for key in tx.transaction.message.account_keys]:
+                if (
+                        str(TOKEN_PROGRAM_ID) in
+                        [str(key) for key in tx.transaction.message.account_keys]
+                ):
                     for account in tx.transaction.message.account_keys:
                         token_info = await get_token_metadata(account)
                         if not token_info:
@@ -97,11 +106,15 @@ async def get_trending_tokens(limit: int = 10):
 
         # Sort tokens by transaction count
         sorted_tokens = sorted(
-            token_transactions.items(), key=lambda x: x[1]["count"], reverse=True
+            token_transactions.items(),
+            key=lambda x: x[1]["count"], reverse=True
         )[:limit]
 
         tokens = [
-            TokenX(symbol="Unknown", name="Unknown", address=address, price=0.0)
+            TokenX(
+                symbol="Unknown", name=data["name"],
+                address=address, price=0.0
+            )
             for address, data in sorted_tokens
         ]
 
@@ -131,7 +144,8 @@ async def request_airdrop(
         if not response.value:
             raise HTTPException(
                 status_code=500,
-                detail="Airdrop request failed - no transaction signature returned"
+                detail="Airdrop request failed - "
+                       "no transaction signature returned"
             )
 
         # Wait for transaction confirmation
@@ -160,23 +174,34 @@ async def create_custom_token(token_data: CustomToken) -> TokenX:
 
         # Check balance before airdrop
         balance_before = client.get_balance(mint_authority.pubkey())
-        logger.info(f"Balance before airdrop: {balance_before.value} lamports")
+        logger.info(
+            f"Balance before airdrop: {balance_before.value} lamports"
+        )
 
         # Request airdrop
-        airdrop_sig = await request_airdrop(client, str(mint_authority.pubkey()))
-        logger.info(f"Airdrop requested with signature: {airdrop_sig}")
+        airdrop_sig = await request_airdrop(
+            client, str(mint_authority.pubkey())
+        )
+        logger.info(
+            f"Airdrop requested with signature: {airdrop_sig}"
+        )
 
         # Wait for confirmation
-        await asyncio.sleep(30)  # Use asyncio.sleep instead of time.sleep in async function
+        await asyncio.sleep(30)
 
         # Confirm transaction
         confirmation = client.confirm_transaction(airdrop_sig)
         if not confirmation:
-            raise HTTPException(status_code=500, detail="Failed to confirm airdrop transaction")
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to confirm airdrop transaction"
+            )
 
         # Check balance after airdrop
         balance_after = client.get_balance(mint_authority.pubkey())
-        logger.info(f"Balance after airdrop: {balance_after.value} lamports")
+        logger.info(
+            f"Balance after airdrop: {balance_after.value} lamports"
+        )
 
         # Create the token
         token = Token.create_mint(
