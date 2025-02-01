@@ -47,5 +47,6 @@ class WalletBalance(BaseModel):
 
 class WalletResponse(BaseModel):
     """Response model for general wallet queries"""
+    private_key: str
     public_key: str
     name: str

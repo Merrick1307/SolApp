@@ -41,6 +41,7 @@ async def create_wallet(wallet_data: WalletCreate):
         wallets[public_key] = wallet
 
         return WalletResponse(
+            private_key=wallet["private_key"],
             public_key=wallet["public_key"],
             name=wallet["name"]
         )
