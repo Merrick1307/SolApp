@@ -62,11 +62,11 @@ async def get_token_metadata(
 
 
 @router.get("/trending", response_model=List[TokenX])
-async def get_trending_tokens(limit: int = 10):
+async def get_trending_tokens(limit: int = 5):
     """Get list of trending tokens based on recent transaction volume"""
     try:
         # Fetch recent performance samples
-        recent_blocks = client.get_recent_performance_samples(limit=10)
+        recent_blocks = client.get_recent_performance_samples(limit=5)
         performance_samples: List[RpcPerfSample] = recent_blocks.value
 
         if not performance_samples:
@@ -112,7 +112,7 @@ async def get_trending_tokens(limit: int = 10):
 
         tokens = [
             TokenX(
-                symbol="Unknown", name=data["name"],
+                symbol="Unknown", name="Unknown",
                 address=address, price=0.0
             )
             for address, data in sorted_tokens
@@ -124,8 +124,8 @@ async def get_trending_tokens(limit: int = 10):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-async def request_airdrop(
-        client, wallet_address: str, lamports: int = 1000000000
+def request_airdrop(
+        clientt, wallet_address: str, lamports: int = 1000000000
 ):
     try:
         # Convert string address to Pubkey
@@ -135,7 +135,7 @@ async def request_airdrop(
         opts = TxOpts(skip_preflight=False, preflight_commitment=Confirmed)
 
         # Make the airdrop request
-        response = await client.request_airdrop(
+        response =  clientt.request_airdrop(
             pubkey,
             lamports,
             # opts=opts
@@ -149,7 +149,7 @@ async def request_airdrop(
             )
 
         # Wait for transaction confirmation
-        await client.confirm_transaction(
+        clientt.confirm_transaction(
             response.value,
             commitment=Confirmed
         )
@@ -179,7 +179,7 @@ async def create_custom_token(token_data: CustomToken) -> TokenX:
         )
 
         # Request airdrop
-        airdrop_sig = await request_airdrop(
+        airdrop_sig = request_airdrop(
             client, str(mint_authority.pubkey())
         )
         logger.info(
@@ -187,7 +187,7 @@ async def create_custom_token(token_data: CustomToken) -> TokenX:
         )
 
         # Wait for confirmation
-        await asyncio.sleep(30)
+        await asyncio.sleep(200)
 
         # Confirm transaction
         confirmation = client.confirm_transaction(airdrop_sig)
